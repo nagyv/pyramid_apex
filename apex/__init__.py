@@ -7,6 +7,7 @@ from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.interfaces import ISessionFactory
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.settings import asbool
+from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.exceptions import Forbidden
@@ -66,13 +67,12 @@ def includeme(config):
     if not settings.get('mako.directories'):
         config.add_settings({'mako.directories': ['apex:templates']})
     
-    config.add_subscriber('apex.lib.subscribers.csrf_validation', \
-                          'pyramid.events.NewRequest')
+#    config.add_subscriber('apex.lib.subscribers.csrf_validation', \
+#                          'pyramid.events.NewRequest')
     config.add_subscriber('apex.lib.subscribers.add_renderer_globals', \
-                          'pyramid.events.BeforeRender')
+                         'pyramid.events.BeforeRender')
     config.add_subscriber('apex.lib.subscribers.add_user_context', \
                           'pyramid.events.ContextFound')
-
     config.add_static_view('apex/static', 'apex:static')
 
     config.add_view(forbidden, context=Forbidden)
@@ -82,15 +82,18 @@ def includeme(config):
 
     config.add_route('apex_login', '/login')
     config.add_view(login, route_name='apex_login', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
     
     config.add_route('apex_logout', '/logout')
     config.add_view(logout, route_name='apex_logout', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
 
     config.add_route('apex_register', '/register')
     config.add_view(register, route_name='apex_register', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
 
     config.add_route('apex_password', '/password')
     config.add_view(change_password, route_name='apex_password', \
@@ -98,23 +101,28 @@ def includeme(config):
     
     config.add_route('apex_forgot', '/forgot')
     config.add_view(forgot_password, route_name='apex_forgot', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
     
     config.add_route('apex_reset', '/reset/:user_id/:hmac')
     config.add_view(reset_password, route_name='apex_reset', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
     
     config.add_route('apex_activate', '/activate/:user_id/:hmac')
     config.add_view(activate, route_name='apex_activate', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
     
     config.add_route('apex_callback', '/apex_callback')
-    config.add_view(apex_callback, route_name='apex_callback')
+    config.add_view(apex_callback, route_name='apex_callback',
+                    permission=NO_PERMISSION_REQUIRED)
 
     config.add_route('apex_openid_required', '/openid_required')
     config.add_view(openid_required, route_name= \
                     'apex_openid_required', \
-                    renderer=render_template)
+                    renderer=render_template,
+                    permission=NO_PERMISSION_REQUIRED)
 
     if settings.has_key('apex.auth_profile'):
         use_edit = asbool(settings.get('apex.use_apex_edit', False))
@@ -123,3 +131,4 @@ def includeme(config):
             config.add_view(edit, route_name='apex_edit', \
                             renderer=render_template, \
                             permission='authenticated')
+
